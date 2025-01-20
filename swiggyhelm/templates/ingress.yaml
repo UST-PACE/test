@@ -18,7 +18,3 @@ spec:
               number: 3000
         path: /
         pathType: Prefix
-  tls:
-  - hosts:
-    - swiggy.sftp.ustpace.com
-    secretName: swiggy-tls
