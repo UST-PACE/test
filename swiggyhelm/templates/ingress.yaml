@@ -1,13 +1,12 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  annotations:
   name: swiggy
   namespace: swiggy
 spec:
   ingressClassName: dagility-nginx-ingress
   rules:
-  - host: swiggyy.test.ustpace.com
+  - host: swiggyclone.test.ustpace.com
     http:
       paths:
       - backend:
