@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     app: {{ .Release.Name }}
-  type: loadBalancer
+  type: ClusterIP
   ports:
     - protocol: TCP
       port: 3000
