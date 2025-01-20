@@ -7,7 +7,7 @@ metadata:
 spec:
   ingressClassName: dagility-nginx-ingress
   rules:
-  - host: swiggyy.sftp.ustpace.com
+  - host: swiggyy.test.ustpace.com
     http:
       paths:
       - backend:
