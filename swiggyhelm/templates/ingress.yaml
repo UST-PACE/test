@@ -4,7 +4,6 @@ metadata:
   name: swiggy
   namespace: swiggy
 spec:
-  ingressClassName: dagility-nginx-ingress
   rules:
   - host: swiggyclone.test.ustpace.com
     http:
