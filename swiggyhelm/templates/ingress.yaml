@@ -4,8 +4,13 @@ metadata:
   name: swiggy
   namespace: swiggy
 spec:
+  ingressClassName: dagility-nginx-ingress   # Replace with your actual ingress class, e.g., 'nginx' or 'dagility-nginx-ingress'
+  tls:
+  - hosts:
+    - swiggyclone.test.ustpace.com  # Use the correct domain
+    secretName: tls-rancher  # The secret that Rancher uses to manage the wildcard cert
   rules:
-  - host: swiggyclone.test.ustpace.com
+  - host: swiggyclone.test.ustpace.com  # The same domain as in the tls section
     http:
       paths:
       - backend:
