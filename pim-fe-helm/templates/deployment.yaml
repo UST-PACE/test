@@ -25,4 +25,6 @@ spec:
           ports:
             - containerPort: {{ .Values.service.targetPort }}
       imagePullSecrets:
-        - name: {{ .Values.imagePullSecrets.name }}
+        {{- range .Values.imagePullSecrets }}
+        - name: {{ .name }}  # Accessing name for each secret in the list
+        {{- end }}
