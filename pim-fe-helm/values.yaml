@@ -1,0 +1,23 @@
+# Default values for pim-fe application
+replicaCount: 1
+
+image:
+  repository: 860602188711.dkr.ecr.us-east-1.amazonaws.com/pim-fe
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  ingressClassName: dagility-nginx-ingress
+  host: pimfe.test.ustpace.com
+  tlsSecretName: tls-rancher
+
+imagePullSecrets:
+  - name: my-ecr-secret
+
+resources: {}
