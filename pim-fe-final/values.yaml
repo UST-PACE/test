@@ -1,0 +1,17 @@
+# Default values for pim-fe application
+replicaCount: 1
+
+image:
+  repository: 860602188711.dkr.ecr.us-east-1.amazonaws.com/pim-fe
+  tag: 28
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+imagePullSecrets:
+  - name: my-ecr-secret
+
+resources: {}
