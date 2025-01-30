@@ -13,7 +13,6 @@ service:
 
 imagePullSecrets:
   - name: my-ecr-secret
-imagePullSecretEncoded: 
 imagePullSecretEncoded: |
   ewoJImF1dGhzIjogewoJCSI4NjA2MDIxODg3MTEuZGtyLmVjci51cy1lYXN0LTEuYW1hem9uYXdz
 LmNvbSI6IHsKCQkJImF1dGgiOiAiUVZkVE9tVjVTbmRaV0d4ellqSkdhMGxxYjJsTldFNVhaREZz
