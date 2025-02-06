@@ -1,0 +1,24 @@
+# values.yaml
+replicaCount: 1
+
+image:
+  repository: 860602188711.dkr.ecr.us-east-1.amazonaws.com/pim-fe
+  tag: 28
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+imagePullSecrets:
+  - name: my-ecr-secret
+
+env:
+  CUSTOMER_NAME: "democa"
+  VERSION: "V 3.1.1"
+  DOMAIN: ".fc-ust.com"
+  OAUTH_URL: "https://democa-api.fc-ust.com/oauth/token"
+  OAUTH_TOKEN: "Basic dXN0and0Y2xpZW50aWQ6dXN0UmQ5M0NmNFdfRm13WiY="
+
+resources: {}
