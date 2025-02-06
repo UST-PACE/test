@@ -1,0 +1,36 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-pim-fe
+  namespace: pim-fe
+  labels:
+    app: pim-fe
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: pim-fe
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: pim-fe
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: pim-fe
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-pim-fe-config
+            - secretRef:
+                name: pim-fe-secrets
+      imagePullSecrets:
+        {{- range .Values.imagePullSecrets }}
+        - name: {{ .name }}
+        {{- end }}
