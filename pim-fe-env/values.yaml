@@ -15,10 +15,10 @@ imagePullSecrets:
   - name: my-ecr-secret
 
 env:
-  CUSTOMER_NAME: "democa"
+  CUSTOMER: "democa"
+  CUSTOMER_NAME: "UST"
   VERSION: "V 3.1.1"
   DOMAIN: ".fc-ust.com"
   OAUTH_URL: "https://democa-api.fc-ust.com/oauth/token"
-  OAUTH_TOKEN: "Basic dXN0and0Y2xpZW50aWQ6dXN0UmQ5M0NmNFdfRm13WiY="
 
 resources: {}
