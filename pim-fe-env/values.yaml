@@ -15,7 +15,7 @@ imagePullSecrets:
   - name: my-ecr-secret
 
 env:
-  CUSTOMER: "ca"
+  CUSTOMER: "democa"
   CUSTOMER_NAME: "UST"
   VERSION: "V 3.1.1"
   DOMAIN: ".fc-ust.com"
