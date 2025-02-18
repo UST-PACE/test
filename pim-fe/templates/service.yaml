@@ -1,0 +1,18 @@
+# service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pim-fe
+  namespace: pim-fe
+  labels:
+    app: pim-fe
+    release: {{ .Release.Name }}
+spec:
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+  selector:
+    app: pim-fe
+    release: {{ .Release.Name }}
+  type: {{ .Values.service.type }}
