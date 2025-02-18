@@ -3,7 +3,7 @@ replicaCount: 1
 
 image:
   repository: 860602188711.dkr.ecr.us-east-1.amazonaws.com/pim-fe
-  tag: 28
+  tag: env
   pullPolicy: Always
 
 service:
