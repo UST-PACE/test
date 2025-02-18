@@ -1,0 +1,12 @@
+# templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-pim-fe-config
+  namespace: pim-fe
+data:
+  CUSTOMER: {{ .Values.env.CUSTOMER }}
+  CUSTOMER_NAME: {{ .Values.env.CUSTOMER_NAME }}
+  VERSION: {{ .Values.env.VERSION }}
+  DOMAIN: {{ .Values.env.DOMAIN }}
+  OAUTH_URL: {{ .Values.env.OAUTH_URL }}
