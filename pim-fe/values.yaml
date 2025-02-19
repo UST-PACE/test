@@ -3,7 +3,7 @@ replicaCount: 1
 
 image:
   repository: 442426895473.dkr.ecr.us-east-1.amazonaws.com/sftp-vc
-  tag: pim-fe-env
+  tag: pim-fe-17
   pullPolicy: Always
 
 service:
