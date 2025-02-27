@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-pim-fe-config
+  name: {{ .Release.Name }}-pim-fe
   namespace: pim-fe
 data:
   CUSTOMER: {{ .Values.env.CUSTOMER }}
