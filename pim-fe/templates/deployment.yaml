@@ -27,6 +27,6 @@ spec:
             - containerPort: {{ .Values.service.targetPort }}
           envFrom:
             - configMapRef:
-                name: {{ .Release.Name }}-pim-fe-config
+                name: {{ .Release.Name }}-pim-fe
             - secretRef:
-                name: pim-fe-secrets
+                name: {{ .Release.Name }}-pim-fe
