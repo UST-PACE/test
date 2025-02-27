@@ -149,10 +149,3 @@ sudo crontab -e
 ```
 This runs the script every 6 hours to refresh the ECR token.
 
-### Save and Exit.
-
----
-
-## Conclusion
-This setup ensures that K3s can consistently authenticate with AWS ECR, preventing token expiration issues. The cron job automates the token renewal every 6 hours, avoiding manual interventions. 🚀
-
