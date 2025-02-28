@@ -27,27 +27,7 @@ aws sts get-caller-identity
 
 ---
 
-## Step 2: Install Amazon ECR Credential Helper
-
-### Install via APT:
-```bash
-sudo apt install -y amazon-ecr-credential-helper
-```
-
-### Or Manually:
-```bash
-curl -Lo /usr/local/bin/docker-credential-ecr-login https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/latest/linux-amd64/docker-credential-ecr-login
-chmod +x /usr/local/bin/docker-credential-ecr-login
-```
-
-### Verify Installation:
-```bash
-docker-credential-ecr-login version
-```
-
----
-
-## Step 3: Configure `registries.yaml` for Persistent AWS ECR Authentication
+## Step 2: Configure `registries.yaml` for Persistent AWS ECR Authentication
 
 ```bash
 sudo mkdir -p /etc/rancher/k3s
@@ -74,7 +54,7 @@ cat /etc/rancher/k3s/registries.yaml
 
 ---
 
-## Step 4: Restart K3s to Apply Changes
+## Step 3: Restart K3s to Apply Changes
 ```bash
 sudo systemctl restart k3s
 ```
@@ -86,7 +66,7 @@ sudo cat /var/lib/rancher/k3s/agent/etc/containerd/config.toml
 
 ---
 
-## Step 5: Test AWS ECR Image Pull
+## Step 4: Test AWS ECR Image Pull
 ```bash
 sudo crictl pull 442426895473.dkr.ecr.us-east-1.amazonaws.com/sftp-vc:pim-fe-env
 ```
@@ -98,7 +78,7 @@ sudo systemctl restart containerd
 
 ---
 
-## Step 6: Setup Automatic ECR Login Renewal (Fix Token Expiry)
+## Step 5: Setup Automatic ECR Login Renewal (Fix Token Expiry)
 
 ### Create an Update Script:
 ```bash
