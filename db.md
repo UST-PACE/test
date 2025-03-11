@@ -14,7 +14,7 @@ Rancher secrets require the content to be **Base64-encoded**.
 Run the following command:
 
 ```bash
-cat db.yaml | base64 -w 0
+cat db.yaml | tr -d '\n' | base64 -w 0
 ```
 
 ✅ **Example Output (Encoded YAML Content):**
