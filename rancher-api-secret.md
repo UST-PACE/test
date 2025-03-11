@@ -4,7 +4,7 @@ This guide outlines the steps to:
 
 - Find the **Cluster ID**
 - Find the **Project ID**
-- Find the **Namespace ID** (with and without project context)
+- Find the **Namespace ID**
 - Create a **Secret**
 - Verify the **Secret**
 
