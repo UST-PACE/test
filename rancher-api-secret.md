@@ -67,18 +67,7 @@ curl -k \
 
 ---
 
-## **Step 4: List Namespaces (Without Project Context)**
-To fetch all namespaces without specifying a project:
-
-```bash
-curl -k \ 
--H "Authorization: Bearer <TOKEN>" \ 
-"https://rancher.test.ustpace.com/v3/namespaces"
-```
-
----
-
-## **Step 5: Encode Secret Values in Base64**
+## **Step 4: Encode Secret Values in Base64**
 Rancher requires secret values to be **Base64-encoded**. To encode your values:
 
 ```bash
@@ -93,7 +82,7 @@ bXktdXNlcm5hbWU=
 
 ---
 
-## **Step 6: Create the Secret**
+## **Step 5: Create the Secret**
 Use the collected **Project ID** and **Namespace ID** in the following command:
 
 ```bash
@@ -115,7 +104,7 @@ curl -k \
 
 ---
 
-## **Step 7: Verify the Secret**
+## **Step 6: Verify the Secret**
 To confirm the secret was created successfully:
 
 ```bash
@@ -133,4 +122,3 @@ curl -k \
 ✅ Verify the correct **Cluster ID**, **Project ID**, and **Namespace ID** before creating the secret.  
 ✅ Secrets must have **Base64-encoded** values. Use `echo -n "<value>" | base64` to encode them.  
 
-If you have any questions or run into issues, feel free to reach out! 🚀
