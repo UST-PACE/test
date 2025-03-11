@@ -54,7 +54,7 @@ To list namespaces within the **Project ID**:
 ```bash
 curl -k \ 
 -H "Authorization: Bearer <TOKEN>" \ 
-"https://rancher.test.ustpace.com/v3/projects/c-m-mq886dkz:p-2kgps/namespaces"
+"https://rancher.test.ustpace.com/v3/clusters/c-m-mq886dkz/namespaces" | jq '.data[] | {id: .id, name: .name}'
 ```
 
 ✅ **Example Output:**
