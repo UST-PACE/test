@@ -1,0 +1,31 @@
+name: database
+namespace: vc-geni
+securityContext:
+  runAsUser: 0
+replicas: 1
+enabled: true
+image: 442426895473.dkr.ecr.us-east-1.amazonaws.com/ust-vc/db:mssql-2019
+
+port: 1433
+targetport: 1433
+protocol: TCP
+env:
+  - envname: ACCEPT_EULA
+    envvalue: "Y"
+  - envname: MSSQL_SA_PASSWORD
+    secretRef:
+      name: db-secret
+      key: MSSQL_SA_PASSWORD
+volumeMounts:
+- name: database-storage
+  mountPath: /var/opt/mssql
+  readOnly: false
+volumes:
+- name:  database-storage
+  persistentVolumeClaim:
+    name: database-pvc
+
+pvc:
+  enabled: true
+  size: 10Gi
+  storageClass: longhorn

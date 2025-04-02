@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+    
+
+      containers:
+        - name: {{ .Values.name }}
+          image: {{ .Values.image }}
+          ports:
+            - containerPort: {{ .Values.port }}
+          {{- if .Values.securityContext }}
+          securityContext:
+            runAsUser: {{ .Values.securityContext.runAsUser }}
+          {{- end }}
+          {{- if .Values.env }}
+          env:
+          {{- range $env := .Values.env }}
+          - name: {{ $env.envname }}
+            {{- if $env.envvalue }}
+            value: "{{ $env.envvalue }}"
+            {{- else if $env.secretRef }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $env.secretRef.name }}
+                key: {{ $env.secretRef.key }}
+            {{- else if $env.configMapRef }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ $env.configMapRef.name }}
+                key: {{ $env.configMapRef.key }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+
+          {{- if or .Values.configMapName .Values.secretName }}
+          envFrom:
+          {{- if .Values.configMapName }}
+          - configMapRef:
+              name: {{ .Values.configMapName }}
+          {{- end }}
+          {{- if .Values.secretName }}
+          - secretRef:
+              name: {{ .Values.secretName }}
+          {{- end }}
+          {{- end }}
+
+          {{- if .Values.volumeMounts }}
+          volumeMounts:
+          {{- range .Values.volumeMounts }}
+            - name: {{ .name }}
+              mountPath: "{{ .mountPath }}"
+              readOnly: {{ .readOnly }}
+          {{- end }}
+          {{- end }}
+          imagePullPolicy: Always
+      {{- if .Values.imagepullsecret }}
+      imagePullSecrets:
+      - name: {{ .Values.imagepullsecret }}
+      {{- end }}
+      {{- if .Values.volumes }}
+      volumes:
+      {{- range .Values.volumes }}
+        - name: {{ .name }}
+          {{- if .configMap }}
+          configMap:
+            name: {{ .configMap.name }}
+          {{- end }}
+          {{- if .secret }}
+          secret:
+            secretName: {{ .secret.secretName }}
+          {{- end }}
+          {{- if .persistentVolumeClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .persistentVolumeClaim.name }}
+          {{- end }}
+      {{- end }}
+      {{- end }}

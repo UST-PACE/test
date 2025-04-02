@@ -1,0 +1,21 @@
+name: admin  
+namespace: vc-geni
+replicas: 1
+image: 442426895473.dkr.ecr.us-east-1.amazonaws.com/ust-vc/admin:ad8eb9-2025-03-27
+port: 82
+targetport: 82
+protocol: TCP
+type: LoadBalancer
+env:
+  - envname: NODE_ENV
+    envvalue: "edge"
+volumeMounts:
+- name: admin-secret
+  mountPath: /usr/src/app/src/config/profiles/
+  readOnly: false
+volumes:
+- name: admin-secret
+  secret:
+    secretName: admin-secret
+pvc:
+  enabled: false

@@ -1,0 +1,24 @@
+name: socket
+namespace: vc-geni
+replicas: 1
+enabled: true
+image: 442426895473.dkr.ecr.us-east-1.amazonaws.com/ust-vc/socket:9b241e-2025-03-28
+port: 81
+targetport: 81
+protocol: TCP
+type: LoadBalancer
+env:
+  - envname: NODE_ENV
+    envvalue: "edge"
+volumeMounts:
+- name: socket-secret
+  mountPath: /usr/src/app/src/config/profiles/
+  readOnly: false
+volumes:
+- name: socket-secret
+  secret:
+    secretName: socket-secret
+pvc:
+  enabled: false
+
+ 

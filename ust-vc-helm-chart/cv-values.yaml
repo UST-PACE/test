@@ -1,0 +1,22 @@
+name: cv
+namespace: vc-geni
+replicas: 1
+enabled: true
+image: 442426895473.dkr.ecr.us-east-1.amazonaws.com/ust-vc/cv:60369f-2025-03-28
+port: 8084
+targetport: 8084
+protocol: TCP
+type: LoadBalancer
+configMapName: cv-config
+secretName: cv-secret
+volumeMounts:
+- name: cv-images
+  mountPath: /app/images
+  readOnly: false
+volumes:
+- name:  cv-images
+  persistentVolumeClaim:
+    name: cv-pvc
+pvc:
+  enabled: true
+  size: 5Gi
