@@ -1,0 +1,15 @@
+pipeline {
+  agent any
+  stages {
+    stage ('Installing (pryyhy)') {
+      steps {
+        sh script: 'npm install', label: '1s0cxx'
+      } //end steps
+    } // end stage Installing
+    stage ('Building (oq9r48)') {
+      steps {
+        sh script: 'npm run build', label: 'mxxr19'
+      } //end steps
+    } // end stage Building
+  }
+}
