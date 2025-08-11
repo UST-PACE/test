@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: otelcol
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prometheus
