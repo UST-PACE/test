@@ -25,44 +25,26 @@ config:
       htpasswd:
          inline: |
           ${env:BASIC_AUTH_USERNAME}:${env:BASIC_AUTH_PASSWORD}
-
   receivers:
-    otlp:
-      protocols:
-        grpc:
-          endpoint: 0.0.0.0:4317
-          auth:
-            authenticator: basicauth/server
-        http:
-          endpoint: 0.0.0.0:4318
-    prometheus: {}  # Required for metrics pipeline; ensure it's included
-
+     otlp:
+       protocols:
+         grpc:
+           endpoint: 0.0.0.0:4317
+           auth:
+              authenticator: basicauth/server
+         http:
+           endpoint: 0.0.0.0:4318
   processors:
     memory_limiter:
       check_interval: 1s
       limit_percentage: 65
       spike_limit_percentage: 20
-
     cumulativetodelta:
-
     filter/histograms:
       error_mode: ignore
       metrics:
         metric:
         - 'type == METRIC_DATA_TYPE_HISTOGRAM'
-
-    k8sattributes:
-      auth_type: serviceAccount
-      extract:
-        metadata:
-          - k8s.cluster.name
-          - k8s.namespace.name
-          - k8s.pod.name
-          - k8s.node.name
-      pod_association:
-        - from: resource_attribute
-          name: k8s.pod.ip
-        - from: connection
 
   connectors:
     spanmetrics: {}
@@ -80,23 +62,18 @@ config:
       logs:
         receivers: [otlp]
         exporters:
-          - otlphttp/grafana_cloud
+        - otlphttp/grafana_cloud
       logs/k8s_events:
         receivers:
-          - otlp
+        - otlp
         exporters:
-          - otlphttp/grafana_cloud
+        - otlphttp/grafana_cloud
       metrics:
         receivers:
-          - otlp
-          - prometheus
-        processors:  # ← ADDED processors section to metrics pipeline
-          - memory_limiter
-          - cumulativetodelta
-          - filter/histograms
-          - k8sattributes
+        - otlp
+        - prometheus
         exporters:
-          - otlphttp/grafana_cloud
+        - otlphttp/grafana_cloud
 
 extraEnvs:
   - name: BASIC_AUTH_USERNAME
