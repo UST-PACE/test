@@ -1,0 +1,27 @@
+image:
+  repository: "otel/opentelemetry-collector-contrib"
+
+extraEnvs:
+  - name: GF_CLOUD_OTLP_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: otel-collector-creds
+        key: GF_CLOUD_OTLP_USERNAME
+  - name: GF_CLOUD_OTLP_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: otel-collector-creds
+        key: GF_CLOUD_OTLP_PASSWORD
+
+
+repositories:
+- name: open-telemetry
+  url: https://open-telemetry.github.io/opentelemetry-helm-charts
+
+releases:
+- name: otelcol-scrape-logs
+  chart: open-telemetry/opentelemetry-collector
+  namespace: otelcol
+  version: 0.116.0
+  values:
+  - ../helmvalues/otelcol-scrape-logs.yaml
