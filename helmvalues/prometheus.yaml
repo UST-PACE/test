@@ -1,0 +1,46 @@
+server:
+  global:
+    external_labels:
+      cluster: k3s-siva
+  replicaCount: 0
+  persistentVolume:
+    enabled: false
+    # size: 100Gi
+    
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+    requests:
+      cpu: 29m
+      memory: 559Mi
+  extraFlags:
+  - "enable-feature=exemplar-storage"
+  # - "enable-feature=otlp-write-receiver"
+  #- "enable-feature=web.remote-write-receiver"
+  - "web.enable-remote-write-receiver"
+alertmanager:
+  enabled: false
+prometheus-pushgateway:
+  enabled: false
+prometheus-node-exporter:
+  enabled: true
+  resources:
+    limits:
+      cpu: 500m
+      memory: 750Mi
+    requests:
+      cpu: 29m
+      memory: 559Mi
+kube-state-metrics:
+  enabled: true
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+configmapReload:
+  prometheus:
+    enabled: false
