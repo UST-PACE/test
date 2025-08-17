@@ -1,0 +1,19 @@
+kube-state-metrics:
+  enabled: true
+
+prometheus-node-exporter:
+  enabled: true
+
+alertmanager:
+  enabled: false
+
+prometheus-pushgateway:
+  enabled: false
+
+server:
+  replicaCount: 0
+  global:
+    external_labels:
+      cluster: k3s-siva
+  persistentVolume:
+    enabled: false

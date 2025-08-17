@@ -1,0 +1,165 @@
+image:
+  repository: "otel/opentelemetry-collector-contrib"
+
+mode: deployment
+
+env:
+  - name: MY_POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
+
+extraEnvs:
+  - name: GF_CLOUD_OTLP_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: otel-collector-creds
+        key: GF_CLOUD_OTLP_USERNAME
+  - name: GF_CLOUD_OTLP_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: otel-collector-creds
+        key: GF_CLOUD_OTLP_PASSWORD
+
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          auth:
+            authenticator: basicauth/server
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: integrations/kubernetes/cadvisor
+            scheme: https
+            kubernetes_sd_configs:
+              - role: node
+            bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+            tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              insecure_skip_verify: false
+              server_name: kubernetes
+            relabel_configs:
+              - target_label: __address__
+                replacement: kubernetes.default.svc.cluster.local:443
+              - source_labels: [__meta_kubernetes_node_name]
+                regex: (.+)
+                target_label: __metrics_path__
+                replacement: /api/v1/nodes/$${1}/proxy/metrics/cadvisor
+            metric_relabel_configs:
+              - action: keep
+                source_labels: [__name__]
+                regex: 'container_.*|machine_.*'
+
+          - job_name: integrations/kubernetes/kubelet
+            scheme: https
+            kubernetes_sd_configs:
+              - role: node
+            bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+            tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              insecure_skip_verify: false
+              server_name: kubernetes
+            relabel_configs:
+              - target_label: __address__
+                replacement: kubernetes.default.svc.cluster.local:443
+              - source_labels: [__meta_kubernetes_node_name]
+                regex: (.+)
+                target_label: __metrics_path__
+                replacement: /api/v1/nodes/$${1}/proxy/metrics
+            metric_relabel_configs:
+              - action: keep
+                source_labels: [__name__]
+                regex: 'container_cpu_usage_seconds_total|kubelet_.*|kubernetes_build_info|rest_client_requests_total|storage_operation_.*|volume_manager_total_volumes'
+
+          - job_name: integrations/kubernetes/kube-state-metrics
+            kubernetes_sd_configs:
+              - role: pod
+            relabel_configs:
+              - action: keep
+                source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+                regex: kube-state-metrics
+            metric_relabel_configs:
+              - action: keep
+                source_labels: [__name__]
+                regex: 'kube_.*'
+
+          - job_name: integrations/node_exporter
+            kubernetes_sd_configs:
+              - role: pod
+            relabel_configs:
+              - action: keep
+                source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+                regex: prometheus-node-exporter.*
+              - action: replace
+                source_labels: [__meta_kubernetes_pod_node_name]
+                target_label: instance
+              - action: replace
+                source_labels: [__meta_kubernetes_namespace]
+                target_label: namespace
+            metric_relabel_configs:
+              - action: keep
+                source_labels: [__name__]
+                regex: 'node_cpu.*|node_filesystem.*|node_memory.*|node_load.*'
+
+          - job_name: kubernetes-pods
+            kubernetes_sd_configs:
+              - role: pod
+            honor_labels: true
+            relabel_configs:
+              - action: keep
+                source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                regex: true
+              - action: replace
+                source_labels: [__meta_kubernetes_namespace]
+                target_label: namespace
+              - action: replace
+                source_labels: [__meta_kubernetes_pod_name]
+                target_label: pod
+
+  processors:
+    resource:
+      attributes:
+        - action: insert
+          key: cluster
+          value: "k3s-siva"
+    batch: {{}}
+    memory_limiter:
+      check_interval: 1s
+      limit_percentage: 65
+      spike_limit_percentage: 20
+
+  exporters:
+    otlphttp/grafana_cloud:
+      endpoint: "https://otlp-gateway-prod-ap-south-1.grafana.net/otlp"
+      auth:
+        authenticator: basicauth/grafana_cloud
+
+  extensions:
+    basicauth/grafana_cloud:
+      client_auth:
+        username: ${env:GF_CLOUD_OTLP_USERNAME}
+        password: ${env:GF_CLOUD_OTLP_PASSWORD}
+    basicauth/server:
+      htpasswd:
+        inline: |
+          ${env:BASIC_AUTH_USERNAME}:${env:BASIC_AUTH_PASSWORD}
+    health_check:
+      endpoint: ${env:MY_POD_IP}:13133
+
+  service:
+    extensions: [basicauth/grafana_cloud, basicauth/server, health_check]
+    pipelines:
+      metrics:
+        receivers: [prometheus]
+        processors: [resource, batch, memory_limiter]
+        exporters: [otlphttp/grafana_cloud]
+      logs:
+        receivers: [otlp]
+        processors: [batch, memory_limiter]
+        exporters: [otlphttp/grafana_cloud]
