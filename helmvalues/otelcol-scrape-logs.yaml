@@ -80,7 +80,7 @@ config:
           to: resource["pod"]
         - type: add
           field: resource["cluster"]
-          value: 'sflabs-k3s' # Set your cluster name here
+          value: 'k3s-siva' # Set your cluster name here
         - type: move
           from: attributes.log
           to: body
