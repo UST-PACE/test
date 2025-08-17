@@ -1,0 +1,195 @@
+# https://grafana.com/docs/grafana-cloud/monitor-infrastructure/kubernetes-monitoring/configuration/helm-chart-config/otel-collector/
+
+image:
+  repository: "otel/opentelemetry-collector-contrib"
+
+# annotations:
+#   service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+#   service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+mode: deployment
+
+ports:
+    otlp-http:
+      enabled: true
+    jaeger-compact:
+      enabled: false
+    jaeger-thrift:
+      enabled: false
+    jaeger-grpc:
+      enabled: false
+    zipkin:
+       enabled: false
+
+config:
+
+  extensions:
+    basicauth/grafana_cloud:
+      client_auth:
+        username: ${env:GF_CLOUD_OTLP_USERNAME}
+        password: ${env:GF_CLOUD_OTLP_PASSWORD}
+    basicauth/server:
+      htpasswd:
+         inline: |
+          ${env:BASIC_AUTH_USERNAME}:${env:BASIC_AUTH_PASSWORD}
+  receivers:
+     otlp:
+       protocols:
+         grpc:
+           endpoint: 0.0.0.0:4317
+           auth:
+              authenticator: basicauth/server
+         http:
+           endpoint: 0.0.0.0:4318
+  processors:
+    memory_limiter:
+      check_interval: 1s
+      limit_percentage: 65
+      spike_limit_percentage: 20
+    cumulativetodelta:
+    filter/histograms:
+      error_mode: ignore
+      metrics:
+        metric:
+        - 'type == METRIC_DATA_TYPE_HISTOGRAM'
+    # changing the batch config may affect prometheus remote write with out of order samples.
+    # batch:
+    #   send_batch_max_size: 200
+    #   send_batch_size: 200
+    #   timeout: 5s
+
+  connectors:
+    spanmetrics: {}
+    servicegraph: {}
+
+  exporters:
+
+    otlphttp/grafana_cloud:
+      endpoint: https://otlp-gateway-prod-us-central-0.grafana.net/otlp
+      auth:
+        authenticator: basicauth/grafana_cloud
+
+  service:
+    extensions: [basicauth/server, health_check, basicauth/grafana_cloud]
+    pipelines:
+      logs:
+        receivers: [otlp]
+        exporters:
+        - otlphttp/grafana_cloud
+      logs/k8s_events:
+        receivers:
+        - otlp
+        exporters:
+        - otlphttp/grafana_cloud
+      metrics:
+        receivers:
+        - otlp
+        - prometheus
+        exporters:
+        - otlphttp/grafana_cloud
+
+# service:
+#   type: LoadBalancer
+
+extraEnvs:
+    - name: BASIC_AUTH_USERNAME
+      valueFrom:
+        secretKeyRef:
+            name: otel-collector-creds
+            key: username
+    - name: BASIC_AUTH_PASSWORD
+      valueFrom:
+        secretKeyRef:
+            name: otel-collector-creds
+            key: password
+    - name: GF_CLOUD_OTLP_USERNAME
+      valueFrom:
+        secretKeyRef:
+            name: otel-collector-creds
+            key: GF_CLOUD_OTLP_USERNAME
+    - name: GF_CLOUD_OTLP_PASSWORD
+      valueFrom:
+        secretKeyRef:
+            name: otel-collector-creds
+            key: GF_CLOUD_OTLP_PASSWORD
+
+
+# presets:
+#   clusterMetrics:
+#     enabled: true
+service:
+  enabled: true
+
+clusterRole:
+  create: true
+  rules:
+    - apiGroups:
+        - ''
+      resources:
+        - nodes
+        - nodes/proxy
+        - services
+        - endpoints
+        - pods
+        - events
+        - namespaces
+        - namespaces/status
+        - pods/status
+        - replicationcontrollers
+        - replicationcontrollers/status
+        - resourcequotas
+      verbs:
+        - get
+        - list
+        - watch
+    - nonResourceURLs:
+        - /metrics
+      verbs:
+        - get
+    - apiGroups:
+        - apps
+      resources:
+        - daemonsets
+        - deployments
+        - replicasets
+        - statefulsets
+      verbs:
+        - get
+        - list
+        - watch
+    - apiGroups:
+        - extensions
+      resources:
+        - daemonsets
+        - deployments
+        - replicasets
+      verbs:
+        - get
+        - list
+        - watch
+    - apiGroups:
+        - batch
+      resources:
+        - jobs
+        - cronjobs
+      verbs:
+        - get
+        - list
+        - watch
+    - apiGroups:
+        - autoscaling
+      resources:
+        - horizontalpodautoscalers
+      verbs:
+        - get
+        - list
+        - watch
+
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
