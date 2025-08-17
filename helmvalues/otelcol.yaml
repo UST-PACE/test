@@ -8,7 +8,6 @@ image:
 
 service:
   type: ClusterIP
-  port: 4317
 
 config:
   receivers:
@@ -50,7 +49,7 @@ config:
         processors: [memory_limiter, batch]
         exporters: [debug, prometheus]
       traces:
-        receivers: [otlp, jaeger, zipkin]
+        receivers: [otlp]
         processors: [memory_limiter, batch]
         exporters: [debug]
       logs:
