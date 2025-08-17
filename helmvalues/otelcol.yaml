@@ -1,95 +1,63 @@
 mode: deployment
-
 replicaCount: 1
 
 image:
-  repository: otel/opentelemetry-collector-contrib
+  repository: otel/opentelemetry-collector
   tag: 0.131.0
   pullPolicy: IfNotPresent
 
-# Disable Prometheus server
-prometheus:
-  enabled: false
-  server:
-    replicaCount: 0
+service:
+  type: ClusterIP
+  port: 4317
 
 config:
-  extensions:
-    health_check: {}
-
   receivers:
+    otlp:
+      protocols:
+        grpc:
+        http:
     prometheus:
       config:
         scrape_configs:
-          - job_name: integrations/kubernetes/kube-apiserver
+          - job_name: 'kubernetes-apiservers'
             kubernetes_sd_configs:
               - role: endpoints
             scheme: https
             tls_config:
               insecure_skip_verify: true
             relabel_configs:
-              - action: keep
-                source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+              - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+                action: keep
                 regex: default;kubernetes;https
-
-          - job_name: integrations/kubernetes/kubelet
-            kubernetes_sd_configs:
-              - role: node
-            scheme: https
-            tls_config:
-              insecure_skip_verify: true
-            bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-            relabel_configs:
-              - action: labelmap
-                regex: __meta_kubernetes_node_label_(.+)
-
-          - job_name: integrations/kubernetes/cadvisor
-            kubernetes_sd_configs:
-              - role: node
-            scheme: https
-            tls_config:
-              insecure_skip_verify: true
-            bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-            metrics_path: /metrics/cadvisor
-            relabel_configs:
-              - action: labelmap
-                regex: __meta_kubernetes_node_label_(.+)
-
-          - job_name: integrations/kubernetes/kube-state-metrics
-            static_configs:
-              - targets: ['kube-state-metrics.monitor.svc.cluster.local:8080']
 
   processors:
     memory_limiter:
       check_interval: 1s
-      limit_percentage: 50
-      spike_limit_percentage: 30
-
-    cumulativetodelta:
-
-    filter/histograms:
-      metrics:
-        exclude:
-          match_type: regexp
-          metric_names:
-            - ".*_bucket$"
-            - ".*_sum$"
-            - ".*_count$"
-
-    resource/cluster:
-      attributes:
-        - key: cluster
-          value: "k3s-test"
-          action: upsert
-
-  connectors:
-    spanmetrics: {}
+      limit_mib: 512
+      spike_limit_mib: 128
+    batch:
 
   exporters:
-    otlphttp:
-      endpoint: https://cicdrest.grafana.net/otlp
-      headers:
-        Authorization: "Bearer <YOUR_API_KEY>"
+    debug: {}
+    prometheus:
+      endpoint: "0.0.0.0:8888"
 
   service:
-    extensions
+    extensions: [health_check]
+    pipelines:
+      metrics:
+        receivers: [otlp, prometheus]
+        processors: [memory_limiter, batch]
+        exporters: [debug, prometheus]
+      traces:
+        receivers: [otlp, jaeger, zipkin]
+        processors: [memory_limiter, batch]
+        exporters: [debug]
+      logs:
+        receivers: [otlp]
+        processors: [memory_limiter, batch]
+        exporters: [debug]
+
+extraEnvs:
+  - name: CLUSTER_NAME
+    value: "k3s-test"
