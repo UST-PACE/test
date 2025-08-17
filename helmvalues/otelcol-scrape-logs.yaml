@@ -113,16 +113,16 @@ config:
 extraEnvs:
   - name: CLUSTER_NAME
     value: k3s-cluster
-    - name: GF_CLOUD_OTLP_USERNAME
-      valueFrom:
-        secretKeyRef:
-            name: otel-collector-creds
-            key: GF_CLOUD_OTLP_USERNAME
-    - name: GF_CLOUD_OTLP_PASSWORD
-      valueFrom:
-        secretKeyRef:
-            name: otel-collector-creds
-            key: GF_CLOUD_OTLP_PASSWORD
+  - name: GF_CLOUD_OTLP_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: otel-collector-creds
+        key: GF_CLOUD_OTLP_USERNAME
+  - name: GF_CLOUD_OTLP_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: otel-collector-creds
+        key: GF_CLOUD_OTLP_PASSWORD
 
 resources:
   limits:
