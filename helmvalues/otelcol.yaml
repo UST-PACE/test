@@ -34,7 +34,7 @@ config:
       check_interval: 1s
       limit_mib: 512
       spike_limit_mib: 128
-    batch:
+    batch: {}
 
   exporters:
     debug: {}
