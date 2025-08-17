@@ -1,11 +1,12 @@
 server:
-   global:
-     external_labels:
-       cluster: k3s-siva
+  global:
+    external_labels:
+      cluster: k3s-siva
   replicaCount: 0
   persistentVolume:
     enabled: false
     # size: 100Gi
+    
   resources:
     limits:
       cpu: 1000m
