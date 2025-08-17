@@ -1,7 +1,7 @@
 server:
-  # global:
-  #   external_labels:
-  #     cluster: sftp
+   global:
+     external_labels:
+       cluster: k3s-siva
   replicaCount: 0
   persistentVolume:
     enabled: false
