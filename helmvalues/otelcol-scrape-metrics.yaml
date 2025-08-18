@@ -235,7 +235,7 @@ config:
         - memory_limiter
         - filter/histograms
         - resource/cluster
-        - transform/add_cluster_label   # ✅ enforce cluster label once
+        - transform/add_cluster_label   # enforce cluster label once
         exporters:
         - logging/debug
         - otlphttp/grafana_cloud
