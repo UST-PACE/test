@@ -226,6 +226,7 @@ config:
       metrics:
         exporters:
         - otlphttp/grafana_cloud
+        - logging/debug  
         receivers:
         - otlp
         - prometheus
