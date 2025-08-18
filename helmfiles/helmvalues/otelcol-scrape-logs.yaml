@@ -1,0 +1,121 @@
+config:
+  exporters:
+    otlphttp/grafana_cloud:
+      auth:
+        authenticator: basicauth/grafana_cloud
+      endpoint: https://otlp-gateway-prod-ap-south-1.grafana.net/otlp
+  extensions:
+    basicauth/grafana_cloud:
+      client_auth:
+        password: ${env:GF_CLOUD_OTLP_PASSWORD}
+        username: ${env:GF_CLOUD_OTLP_USERNAME}
+  processors:
+    resource:
+      attributes:
+      - action: insert
+        key: loki.format
+        value: raw
+      - action: insert
+        key: loki.resource.labels
+        value: pod, namespace, container, cluster, filename
+  receivers:
+    filelog:
+      include:
+      - /var/log/pods/*/*/*.log
+      include_file_name: false
+      include_file_path: true
+      operators:
+      - id: get-format
+        routes:
+        - expr: body matches "^\\{"
+          output: parser-docker
+        - expr: body matches "^[^ Z]+ "
+          output: parser-crio
+        - expr: body matches "^[^ Z]+Z"
+          output: parser-containerd
+        type: router
+      - id: parser-crio
+        output: extract_metadata_from_filepath
+        regex: ^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$
+        timestamp:
+          layout: 2006-01-02T15:04:05.999999999Z07:00
+          layout_type: gotime
+          parse_from: attributes.time
+        type: regex_parser
+      - id: parser-containerd
+        output: extract_metadata_from_filepath
+        regex: ^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$
+        timestamp:
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+          parse_from: attributes.time
+        type: regex_parser
+      - id: parser-docker
+        output: extract_metadata_from_filepath
+        timestamp:
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+          parse_from: attributes.time
+        type: json_parser
+      - cache:
+          size: 128
+        id: extract_metadata_from_filepath
+        parse_from: attributes["log.file.path"]
+        regex: ^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{16,36})\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$
+        type: regex_parser
+      - from: attributes["log.file.path"]
+        to: resource["filename"]
+        type: move
+      - from: attributes.container_name
+        to: resource["container"]
+        type: move
+      - from: attributes.namespace
+        to: resource["namespace"]
+        type: move
+      - from: attributes.pod_name
+        to: resource["pod"]
+        type: move
+      - field: resource["cluster"]
+        type: add
+        value: sflabs-k3s
+      - from: attributes.log
+        to: body
+        type: move
+      start_at: beginning
+  service:
+    extensions:
+    - health_check
+    - basicauth/grafana_cloud
+    pipelines:
+      logs:
+        exporters:
+        - otlphttp/grafana_cloud
+        processors:
+        - resource
+        receivers:
+        - filelog
+      metrics: {}
+      traces: {}
+extraEnvs:
+- name: GF_CLOUD_OTLP_USERNAME
+  valueFrom:
+    secretKeyRef:
+      key: GF_CLOUD_OTLP_USERNAME
+      name: otel-collector-creds
+- name: GF_CLOUD_OTLP_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      key: GF_CLOUD_OTLP_PASSWORD
+      name: otel-collector-creds
+image:
+  repository: otel/opentelemetry-collector-contrib
+mode: daemonset
+presets:
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: true
+resources:
+  limits:
+    cpu: 300m
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 50Mi
