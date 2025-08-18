@@ -84,11 +84,6 @@ config:
     basicauth/server:
       htpasswd:
         inline: '${env:BASIC_AUTH_USERNAME}:${env:BASIC_AUTH_PASSWORD}'
-    health_check: {}
-    pprof: {}
-    zpages: {}
-    prometheus:               # 👈 expose collector metrics at :8888
-      endpoint: "0.0.0.0:8888"
 
   processors:
     filter/histograms:
@@ -110,6 +105,9 @@ config:
       - key: cluster
         from_attribute: cluster
         action: insert
+    resourcedetection:
+      detectors: [env]
+      override: false
 
   receivers:
     otlp:
@@ -216,9 +214,6 @@ config:
     - basicauth/server
     - health_check
     - basicauth/grafana_cloud
-    - pprof
-    - zpages
-    - prometheus         # 👈 enable collector /metrics
     pipelines:
       logs:
         exporters:
@@ -235,9 +230,15 @@ config:
         - filter/histograms
         - resource/cluster
         - attributes/promote_cluster
+        - resourcedetection
         exporters:
         - logging/debug
         - otlphttp/grafana_cloud
+    telemetry:
+      metrics:
+        address: 0.0.0.0:8888
+        resource_to_telemetry_conversion:
+          enabled: true   # <--- ensures "cluster" is copied to all metrics
 
 extraEnvs:
 - name: BASIC_AUTH_USERNAME
