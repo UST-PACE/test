@@ -206,9 +206,6 @@ config:
     - basicauth/server
     - health_check
     - basicauth/grafana_cloud
-    telemetry:                # ✅ ensures resource attrs become metric labels
-      resource_to_telemetry_conversion:
-        enabled: true
     pipelines:
       logs:
         exporters:
