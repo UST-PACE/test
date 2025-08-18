@@ -62,15 +62,20 @@ clusterRole:
     - get
     - list
     - watch
+
 config:
   connectors:
     servicegraph: {}
     spanmetrics: {}
+
   exporters:
+    logging/debug:          # ✅ added this exporter
+      loglevel: debug
     otlphttp/grafana_cloud:
       auth:
         authenticator: basicauth/grafana_cloud
       endpoint: https://otlp-gateway-prod-ap-south-1.grafana.net/otlp
+
   extensions:
     basicauth/grafana_cloud:
       client_auth:
@@ -79,8 +84,8 @@ config:
     basicauth/server:
       htpasswd:
         inline: '${env:BASIC_AUTH_USERNAME}:${env:BASIC_AUTH_PASSWORD}
-
           '
+
   processors:
     cumulativetodelta: null
     filter/histograms:
@@ -97,6 +102,7 @@ config:
       - action: upsert
         key: cluster
         value: siva-ai
+
   receivers:
     otlp:
       protocols:
@@ -116,8 +122,7 @@ config:
           metric_relabel_configs:
           - action: keep
             regex: apiserver_.*
-            source_labels:
-            - __name__
+            source_labels: [__name__]
           relabel_configs:
           - action: keep
             regex: default;kubernetes;https
@@ -136,15 +141,13 @@ config:
           metric_relabel_configs:
           - action: keep
             regex: container_.*|machine_.*
-            source_labels:
-            - __name__
+            source_labels: [__name__]
           relabel_configs:
           - replacement: kubernetes.default.svc.cluster.local:443
             target_label: __address__
           - regex: (.+)
             replacement: /api/v1/nodes/$${1}/proxy/metrics/cadvisor
-            source_labels:
-            - __meta_kubernetes_node_name
+            source_labels: [__meta_kubernetes_node_name]
             target_label: __metrics_path__
           scheme: https
           tls_config:
@@ -158,15 +161,13 @@ config:
           metric_relabel_configs:
           - action: keep
             regex: container_cpu_usage_seconds_total|kubelet_.*
-            source_labels:
-            - __name__
+            source_labels: [__name__]
           relabel_configs:
           - replacement: kubernetes.default.svc.cluster.local:443
             target_label: __address__
           - regex: (.+)
             replacement: /api/v1/nodes/$${1}/proxy/metrics
-            source_labels:
-            - __meta_kubernetes_node_name
+            source_labels: [__meta_kubernetes_node_name]
             target_label: __metrics_path__
           scheme: https
           tls_config:
@@ -179,34 +180,29 @@ config:
           metric_relabel_configs:
           - action: keep
             regex: kube_.*
-            source_labels:
-            - __name__
+            source_labels: [__name__]
           relabel_configs:
           - action: keep
             regex: kube-state-metrics
-            source_labels:
-            - __meta_kubernetes_pod_label_app_kubernetes_io_name
+            source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
         - job_name: integrations/node_exporter
           kubernetes_sd_configs:
           - role: pod
           metric_relabel_configs:
           - action: keep
             regex: node_cpu.*|node_filesystem.*|node_memory.*|node_load.*
-            source_labels:
-            - __name__
+            source_labels: [__name__]
           relabel_configs:
           - action: keep
             regex: prometheus-node-exporter.*
-            source_labels:
-            - __meta_kubernetes_pod_label_app_kubernetes_io_name
+            source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
           - action: replace
-            source_labels:
-            - __meta_kubernetes_pod_node_name
+            source_labels: [__meta_kubernetes_pod_node_name]
             target_label: instance
           - action: replace
-            source_labels:
-            - __meta_kubernetes_namespace
+            source_labels: [__meta_kubernetes_namespace]
             target_label: namespace
+
   service:
     extensions:
     - basicauth/server
@@ -216,17 +212,15 @@ config:
       logs:
         exporters:
         - otlphttp/grafana_cloud
-        receivers:
-        - otlp
+        receivers: [otlp]
       logs/k8s_events:
         exporters:
         - otlphttp/grafana_cloud
-        receivers:
-        - otlp
+        receivers: [otlp]
       metrics:
         exporters:
+        - logging/debug      # ✅ this will print metrics in logs (with cluster label)
         - otlphttp/grafana_cloud
-        - logging/debug  
         receivers:
         - otlp
         - prometheus
@@ -235,6 +229,7 @@ config:
         - filter/histograms
         - cumulativetodelta
         - resource/cluster
+
 extraEnvs:
 - name: BASIC_AUTH_USERNAME
   valueFrom:
@@ -256,9 +251,12 @@ extraEnvs:
     secretKeyRef:
       key: GF_CLOUD_OTLP_PASSWORD
       name: otel-collector-creds
+
 image:
   repository: otel/opentelemetry-collector-contrib
+
 mode: deployment
+
 ports:
   jaeger-compact:
     enabled: false
@@ -270,6 +268,7 @@ ports:
     enabled: true
   zipkin:
     enabled: false
+
 resources:
   limits:
     cpu: 300m
@@ -277,5 +276,6 @@ resources:
   requests:
     cpu: 100m
     memory: 128Mi
+
 service:
   enabled: true
