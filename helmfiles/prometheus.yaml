@@ -1,0 +1,43 @@
+alertmanager:
+  enabled: false
+configmapReload:
+  prometheus:
+    enabled: false
+kube-state-metrics:
+  enabled: true
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+prometheus-node-exporter:
+  enabled: true
+  resources:
+    limits:
+      cpu: 500m
+      memory: 750Mi
+    requests:
+      cpu: 29m
+      memory: 559Mi
+prometheus-pushgateway:
+  enabled: false
+server:
+  global:
+    external_labels:
+      cluster: siva-latest
+  extraFlags:
+  - enable-feature=exemplar-storage
+  - web.enable-remote-write-receiver
+  persistentVolume:
+    enabled: false
+  replicaCount: 0
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+    requests:
+      cpu: 29m
+      memory: 559Mi
+
