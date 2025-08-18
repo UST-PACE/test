@@ -84,6 +84,11 @@ config:
     basicauth/server:
       htpasswd:
         inline: '${env:BASIC_AUTH_USERNAME}:${env:BASIC_AUTH_PASSWORD}'
+    health_check: {}
+    pprof: {}
+    zpages: {}
+    prometheus:               # 👈 expose collector metrics at :8888
+      endpoint: "0.0.0.0:8888"
 
   processors:
     filter/histograms:
@@ -211,6 +216,9 @@ config:
     - basicauth/server
     - health_check
     - basicauth/grafana_cloud
+    - pprof
+    - zpages
+    - prometheus         # 👈 enable collector /metrics
     pipelines:
       logs:
         exporters:
@@ -226,7 +234,7 @@ config:
         - memory_limiter
         - filter/histograms
         - resource/cluster
-        - attributes/promote_cluster   # <-- cluster promoted as metric label
+        - attributes/promote_cluster
         exporters:
         - logging/debug
         - otlphttp/grafana_cloud
