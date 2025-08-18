@@ -75,7 +75,7 @@ config:
         type: move
       - field: resource["cluster"]
         type: add
-        value: sflabs-k3s
+        value: siva-ai
       - from: attributes.log
         to: body
         type: move
