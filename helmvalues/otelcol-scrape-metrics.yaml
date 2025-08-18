@@ -2,7 +2,7 @@ clusterRole:
   create: true
   rules:
   - apiGroups:
-    - ""
+    - ''
     resources:
     - nodes
     - nodes/proxy
@@ -78,8 +78,9 @@ config:
         username: ${env:GF_CLOUD_OTLP_USERNAME}
     basicauth/server:
       htpasswd:
-        inline: |
-          ${env:BASIC_AUTH_USERNAME}:${env:BASIC_AUTH_PASSWORD}
+        inline: '${env:BASIC_AUTH_USERNAME}:${env:BASIC_AUTH_PASSWORD}
+
+          '
   processors:
     cumulativetodelta: null
     filter/histograms:
@@ -91,6 +92,11 @@ config:
       check_interval: 1s
       limit_percentage: 65
       spike_limit_percentage: 20
+    resource/cluster:
+      attributes:
+      - action: upsert
+        key: cluster
+        value: siva-ai
   receivers:
     otlp:
       protocols:
@@ -223,6 +229,11 @@ config:
         receivers:
         - otlp
         - prometheus
+        processors:
+        - memory_limiter
+        - filter/histograms
+        - cumulativetodelta
+        - resource/cluster
 extraEnvs:
 - name: BASIC_AUTH_USERNAME
   valueFrom:
