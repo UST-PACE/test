@@ -38,6 +38,10 @@ server:
       cpu: 1000m
       memory: 1024Mi
     requests:
-      cpu: 29m
-      memory: 559Mi
+      cpu: 750m
+      memory: 768Mi
+serverFiles:
+  prometheus.yml:
+    scrape_configs: []
+      
 
