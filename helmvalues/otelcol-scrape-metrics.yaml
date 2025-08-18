@@ -105,9 +105,6 @@ config:
       - key: cluster
         from_attribute: cluster
         action: insert
-    resourcedetection:
-      detectors: [env]
-      override: false
 
   receivers:
     otlp:
@@ -214,6 +211,9 @@ config:
     - basicauth/server
     - health_check
     - basicauth/grafana_cloud
+    telemetry:
+      metrics:
+        address: 0.0.0.0:8888
     pipelines:
       logs:
         exporters:
@@ -230,15 +230,11 @@ config:
         - filter/histograms
         - resource/cluster
         - attributes/promote_cluster
-        - resourcedetection
         exporters:
         - logging/debug
         - otlphttp/grafana_cloud
-    telemetry:
-      metrics:
-        address: 0.0.0.0:8888
         resource_to_telemetry_conversion:
-          enabled: true   # <--- ensures "cluster" is copied to all metrics
+          enabled: true   # ✅ moved here
 
 extraEnvs:
 - name: BASIC_AUTH_USERNAME
