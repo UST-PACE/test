@@ -69,7 +69,7 @@ config:
     spanmetrics: {}
 
   exporters:
-    logging/debug:          # ✅ debug exporter for log validation
+    logging/debug:
       loglevel: debug
     otlphttp/grafana_cloud:
       auth:
@@ -83,11 +83,9 @@ config:
         username: ${env:GF_CLOUD_OTLP_USERNAME}
     basicauth/server:
       htpasswd:
-        inline: '${env:BASIC_AUTH_USERNAME}:${env:BASIC_AUTH_PASSWORD}
-          '
+        inline: '${env:BASIC_AUTH_USERNAME}:${env:BASIC_AUTH_PASSWORD}'
 
   processors:
-    # ❌ removed cumulativetodelta
     filter/histograms:
       error_mode: ignore
       metrics:
@@ -102,6 +100,11 @@ config:
       - action: upsert
         key: cluster
         value: siva-ai
+    attributes/cluster_to_label:   # ✅ ensure cluster becomes a metric label
+      actions:
+      - key: cluster
+        action: insert
+        from_attribute: cluster
 
   receivers:
     otlp:
@@ -228,6 +231,7 @@ config:
         - memory_limiter
         - filter/histograms
         - resource/cluster
+        - attributes/cluster_to_label   # ✅ added here
 
 extraEnvs:
 - name: BASIC_AUTH_USERNAME
