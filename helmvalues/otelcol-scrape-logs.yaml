@@ -75,7 +75,7 @@ config:
         type: move
       - field: resource["cluster"]
         type: add
-        value: siva-ai
+        value: jacksonhole
       - from: attributes.log
         to: body
         type: move
