@@ -102,7 +102,7 @@ config:
       attributes:
       - action: upsert
         key: cluster
-        value: siva-ai
+        value: jacksonhole
 
     # Copy resource.cluster → metric label
     transform/add_cluster_label:
