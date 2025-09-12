@@ -1,0 +1,18 @@
+repositories:
+- name: open-telemetry
+  url: https://open-telemetry.github.io/opentelemetry-helm-charts
+
+releases:
+- name: otel-collector
+  chart: open-telemetry/opentelemetry-collector
+  namespace: otelcol
+  version: 0.93.1
+  values:
+    - ../helmvalues/otelcol-scrape-metrics.yaml
+
+- name: otelcol-scrape-logs
+  chart: open-telemetry/opentelemetry-collector
+  namespace: otelcol
+  version: 0.93.1
+  values:
+    - ../helmvalues/otelcol-scrape-logs.yaml
